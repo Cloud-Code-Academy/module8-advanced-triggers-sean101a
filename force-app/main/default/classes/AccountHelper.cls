@@ -28,19 +28,59 @@ Always ensure that your helper methods are bulk-safe to handle multiple records 
 */
 public with sharing class AccountHelper {
     
-    public void setTypeProspect(SObject objects){
-
+    // Sets the Type to 'Prospect' if the Type is not already set
+    public static void setTypeProspect(List<Account> accounts){
+        for (Account acc : accounts) {
+            if (String.isBlank(acc.Type)) {
+                acc.Type = 'Prospect';
+            }
+        }
     }
 
-    void addressCopy(){
-
+    // Copies the Shipping Address to Billing Address if present
+    public static void addressCopy(List<Account> accounts){
+        for (Account acc : accounts) {
+            if (String.isNotBlank(acc.ShippingStreet)) {
+                acc.BillingStreet = acc.ShippingStreet;
+            }
+            if (String.isNotBlank(acc.ShippingCity)) {
+                acc.BillingCity = acc.ShippingCity;
+            }
+            if (String.isNotBlank(acc.ShippingState)) {
+                acc.BillingState = acc.ShippingState;
+            }
+            if (String.isNotBlank(acc.ShippingPostalCode)) {
+                acc.BillingPostalCode = acc.ShippingPostalCode;
+            }
+            if (String.isNotBlank(acc.ShippingCountry)) {
+                acc.BillingCountry = acc.ShippingCountry;
+            }
+        }
     }
 
-    //[public | private ] [static] data_type setRating (input parameters) {
-    //  The body of the method
-    //}
+    // Sets the Rating to 'Hot' if Phone, Website, and Fax are present
+    public static void setRating (List<Account> accounts) {
+        for (Account acc : accounts) {
+            if (String.isNotBlank(acc.Phone) && 
+                String.isNotBlank(acc.Website) && 
+                String.isNotBlank(acc.Fax)) {
+                acc.Rating = 'Hot';
+            }
+        }
+    }
 
-    //[public | private ] [static] data_type defaultContact (input parameters) {
-    //  The body of the method
-    //}
+    // Creates a default Contact for each Account
+    public static void defaultContact (List<Account> accounts) {
+        List<Contact> contacts = new List<Contact>();
+        for (Account acc : accounts) {
+            contacts.add(new Contact(
+                LastName = 'DefaultContact',
+                Email = 'default@email.com',
+                AccountId = acc.Id
+            ));
+        }
+        if (!contacts.isEmpty()) {
+            insert contacts;
+        }
+    }
 }
